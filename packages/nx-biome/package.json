@@ -1,0 +1,12 @@
+{
+  "name": "nx-biome",
+  "version": "0.0.1",
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "@nx/devkit": "20.6.0",
+    "tslib": "^2.3.0"
+  },
+  "generators": "./generators.json"
+}

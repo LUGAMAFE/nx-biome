@@ -1,0 +1,14 @@
+{
+  "name": "y",
+  "version": "0.0.1",
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "create-nx-workspace": "20.6.0",
+    "tslib": "^2.3.0"
+  },
+  "bin": {
+    "y": "./bin/index.js"
+  }
+}
