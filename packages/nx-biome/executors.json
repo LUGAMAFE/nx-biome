@@ -1,0 +1,19 @@
+{
+  "executors": {
+    "lint": {
+      "implementation": "./src/executors/lint/lint",
+      "schema": "./src/executors/lint/schema.json",
+      "description": "Runs Lint task using BiomeJS"
+    },
+    "format": {
+      "implementation": "./src/executors/format/format",
+      "schema": "./src/executors/format/schema.json",
+      "description": "Runs Format task using BiomeJS"
+    },
+    "check": {
+      "implementation": "./src/executors/check/check",
+      "schema": "./src/executors/check/schema.json",
+      "description": "Runs Check task using BiomeJS"
+    }
+  }
+}
