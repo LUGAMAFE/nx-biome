@@ -9,5 +9,9 @@
     "tslib": "^2.3.0"
   },
   "generators": "./generators.json",
-  "executors": "./executors.json"
+  "executors": "./executors.json",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/nx-biome"
+  }
 }

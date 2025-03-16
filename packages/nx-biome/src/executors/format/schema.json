@@ -1,9 +1,10 @@
 {
   "$schema": "https://json-schema.org/schema",
   "version": 2,
-  "title": "Format executor",
-  "description": "",
+  "title": "Schema for Nx Biome format executor",
+  "description": "Format files using BiomeJS",
   "type": "object",
-  "properties": {},
-  "required": []
+  "allOf": [
+    { "$ref": "../shared/base-schema.json" }
+  ]
 }

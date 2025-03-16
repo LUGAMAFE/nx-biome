@@ -1,11 +1,14 @@
 import { PromiseExecutor } from '@nx/devkit';
+import { BiomeExecutorBase } from '../shared/biome-base';
 import { LintExecutorSchema } from './schema';
 
-const runExecutor: PromiseExecutor<LintExecutorSchema> = async (options) => {
-  console.log('Executor ran for Lint', options);
-  return {
-    success: true,
-  };
+class LintExecutor extends BiomeExecutorBase<LintExecutorSchema> {
+  protected command = 'lint';
+}
+
+const runExecutor: PromiseExecutor<LintExecutorSchema> = async (options, context) => {
+  const executor = new LintExecutor(options, context);
+  return executor.execute();
 };
 
 export default runExecutor;

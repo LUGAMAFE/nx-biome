@@ -1,9 +1,10 @@
 {
   "$schema": "https://json-schema.org/schema",
   "version": 2,
-  "title": "Lint executor",
-  "description": "",
+  "title": "Schema for Nx Biome linter executor",
+  "description": "Lint files using BiomeJS",
   "type": "object",
-  "properties": {},
-  "required": []
+  "allOf": [
+    { "$ref": "../shared/base-schema.json" }
+  ]
 }

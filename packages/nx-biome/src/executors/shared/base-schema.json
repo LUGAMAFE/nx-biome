@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "version": 2,
+  "title": "Base Schema for Nx Biome executors",
+  "type": "object",
+  "properties": {
+    "filePatterns": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "The file patterns to process"
+    },
+    "write": {
+      "type": "boolean",
+      "description": "Whether to write the changes to the files"
+    },
+    "unsafe": {
+      "type": "boolean",
+      "description": "Whether to allow unsafe operations"
+    }
+  },
+  "required": ["filePatterns"]
+}

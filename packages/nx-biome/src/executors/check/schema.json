@@ -1,9 +1,10 @@
 {
   "$schema": "https://json-schema.org/schema",
   "version": 2,
-  "title": "Check executor",
-  "description": "",
+  "title": "Schema for Nx Biome check executor",
+  "description": "Check files using BiomeJS",
   "type": "object",
-  "properties": {},
-  "required": []
+  "allOf": [
+    { "$ref": "../shared/base-schema.json" }
+  ]
 }

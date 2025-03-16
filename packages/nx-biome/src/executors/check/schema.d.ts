@@ -1,1 +1,3 @@
-export interface CheckExecutorSchema {} // eslint-disable-line
+import { BiomeBaseOptions } from '../shared/biome-base';
+
+export type CheckExecutorSchema = BiomeBaseOptions;
