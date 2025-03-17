@@ -1,8 +1,15 @@
+import { getPackageManagerCommand, writeJsonFile } from '@nx/devkit';
 import { execSync } from 'child_process';
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
-import { dirname, join } from 'path';
+import { readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
+import {
+  checkFilesExist,
+  createTestProject,
+  readJson,
+  runNxCommandAsync
+} from './utils/testing';
 
-describe('nx-biome', () => {
+describe('nx-biome e2e', () => {
   let projectDirectory: string;
   let testFilePath: string;
   let originalContent: string;
@@ -18,26 +25,26 @@ describe('nx-biome', () => {
     }
   `;
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    // Create a test project using our utility function
     projectDirectory = createTestProject();
 
-    // Install the plugin from the local Verdaccio registry
-    // The plugin is automatically published to Verdaccio by Nx during e2e tests
-    execSync('npm install -D nx-biome@0.0.1 @nx/js', {
-      cwd: projectDirectory,
-      stdio: 'inherit',
-      env: {
-        ...process.env,
-        npm_config_registry: 'http://localhost:4873'
+    // Install the plugin built with the latest source code
+    execSync(
+      `${getPackageManagerCommand().addDev} @LUGAMAFE/nx-biome@e2e @nx/js`,
+      {
+        cwd: projectDirectory,
+        stdio: 'inherit',
+        env: process.env,
       }
-    });
+    );
 
-    // Generate a JS library
-    execSync('npx nx g @nx/js:library test-lib --bundler=none --linter=none --unitTestRunner=jest --no-interactive', {
-      cwd: projectDirectory,
-      stdio: 'inherit',
-      env: process.env,
-    });
+    // Generate a JS library using our runNxCommandAsync utility
+    const libName = 'test-lib';
+    await runNxCommandAsync(
+      `g @nx/js:library ${libName} --directory=libs/test-lib --bundler=none --linter=none --unitTestRunner=jest --no-interactive`,
+      { cwd: projectDirectory }
+    );
 
     // Create a test file with some content that needs formatting
     testFilePath = join(projectDirectory, 'libs/test-lib/src/lib/test.ts');
@@ -46,7 +53,7 @@ describe('nx-biome', () => {
 
     // Setup Biome configuration
     const biomeConfigPath = join(projectDirectory, 'biome.json');
-    writeFileSync(biomeConfigPath, JSON.stringify({
+    writeJsonFile(biomeConfigPath, {
       "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
       "vcs": {
         "enabled": false,
@@ -77,35 +84,43 @@ describe('nx-biome', () => {
           "trailingComma": "all"
         }
       }
-    }, null, 2));
+    });
 
     // Update project.json to add Biome executors
     const projectJsonPath = join(projectDirectory, 'libs/test-lib/project.json');
-    const projectJson = JSON.parse(readFileSync(projectJsonPath, 'utf-8'));
+    const projectJson = readJson(projectJsonPath);
 
     projectJson.targets = {
       ...projectJson.targets,
       lint: {
-        executor: 'nx-biome:lint',
+        executor: '@LUGAMAFE/nx-biome:lint',
         options: {
           filePatterns: ['src/**/*.ts']
         }
       },
       format: {
-        executor: 'nx-biome:format',
+        executor: '@LUGAMAFE/nx-biome:format',
         options: {
           filePatterns: ['src/**/*.ts']
         }
       },
       check: {
-        executor: 'nx-biome:check',
+        executor: '@LUGAMAFE/nx-biome:check',
         options: {
           filePatterns: ['src/**/*.ts']
         }
       }
     };
 
-    writeFileSync(projectJsonPath, JSON.stringify(projectJson, null, 2));
+    writeJsonFile(projectJsonPath, projectJson);
+
+    // Verify files exist
+    expect(() =>
+      checkFilesExist(
+        'biome.json',
+        'libs/test-lib/project.json'
+      )
+    ).not.toThrow();
   });
 
   beforeEach(() => {
@@ -114,36 +129,33 @@ describe('nx-biome', () => {
   });
 
   afterAll(() => {
-    if (projectDirectory) {
-      rmSync(projectDirectory, { recursive: true, force: true });
-    }
+    // Cleanup is handled by the test framework
   });
 
   it('should be installed', () => {
-    execSync('npm ls nx-biome', {
+    // npm ls will fail if the package is not installed properly
+    execSync(`${getPackageManagerCommand().list} @LUGAMAFE/nx-biome`, {
       cwd: projectDirectory,
       stdio: 'inherit',
     });
   });
 
   describe('lint executor', () => {
-    it('should run lint command and detect issues', () => {
+    it('should run lint command and detect issues', async () => {
       try {
-        execSync('npx nx lint test-lib', {
-          cwd: projectDirectory,
-          encoding: 'utf-8',
-        });
+        await runNxCommandAsync('lint test-lib', { cwd: projectDirectory });
         fail('Expected lint to fail due to formatting issues');
       } catch (error) {
         expect(error.message).toContain('Command failed');
       }
     });
 
-    it('should fix issues when using write option', () => {
-      execSync('npx nx lint test-lib --write', {
+    it('should fix issues when using write option', async () => {
+      const result = await runNxCommandAsync('lint test-lib --write', {
         cwd: projectDirectory,
-        encoding: 'utf-8',
       });
+
+      expect(result.stdout).toContain('Successfully ran target lint');
 
       // Verify the file was fixed
       const fileContent = readFileSync(testFilePath, 'utf-8');
@@ -153,23 +165,21 @@ describe('nx-biome', () => {
   });
 
   describe('format executor', () => {
-    it('should detect formatting issues', () => {
+    it('should detect formatting issues', async () => {
       try {
-        execSync('npx nx format test-lib', {
-          cwd: projectDirectory,
-          encoding: 'utf-8',
-        });
+        await runNxCommandAsync('format test-lib', { cwd: projectDirectory });
         fail('Expected format to fail due to formatting issues');
       } catch (error) {
         expect(error.message).toContain('Command failed');
       }
     });
 
-    it('should fix formatting when using write option', () => {
-      execSync('npx nx format test-lib --write', {
+    it('should fix formatting when using write option', async () => {
+      const result = await runNxCommandAsync('format test-lib --write', {
         cwd: projectDirectory,
-        encoding: 'utf-8',
       });
+
+      expect(result.stdout).toContain('Successfully ran target format');
 
       // Verify the file was formatted
       const fileContent = readFileSync(testFilePath, 'utf-8');
@@ -179,53 +189,28 @@ describe('nx-biome', () => {
   });
 
   describe('check executor', () => {
-    it('should detect issues', () => {
+    it('should detect issues', async () => {
       try {
-        execSync('npx nx check test-lib', {
-          cwd: projectDirectory,
-          encoding: 'utf-8',
-        });
+        await runNxCommandAsync('check test-lib', { cwd: projectDirectory });
         fail('Expected check to fail due to issues');
       } catch (error) {
         expect(error.message).toContain('Command failed');
       }
     });
 
-    it('should fix issues when using write option', () => {
-      execSync('npx nx check test-lib --write', {
+    it('should fix issues when using write option', async () => {
+      const result = await runNxCommandAsync('check test-lib --write', {
         cwd: projectDirectory,
-        encoding: 'utf-8',
       });
 
+      expect(result.stdout).toContain('Successfully ran target check');
+
       // Verify issues were fixed
-      const output = execSync('npx nx check test-lib', {
+      const verifyResult = await runNxCommandAsync('check test-lib', {
         cwd: projectDirectory,
-        encoding: 'utf-8',
       });
-      expect(output).toBeDefined();
+
+      expect(verifyResult.stdout).toContain('Successfully ran target check');
     });
   });
 });
-
-/**
- * Creates a test project with create-nx-workspace and installs the plugin
- * @returns The directory where the test project was created
- */
-function createTestProject() {
-  const projectName = 'test-project';
-  const projectDirectory = join(process.cwd(), 'tmp', projectName);
-
-  rmSync(projectDirectory, { recursive: true, force: true });
-  mkdirSync(dirname(projectDirectory), { recursive: true });
-
-  execSync(
-    `npx create-nx-workspace@latest ${projectName} --preset npm --nxCloud=skip --no-interactive`,
-    {
-      cwd: dirname(projectDirectory),
-      stdio: 'inherit',
-      env: process.env,
-    }
-  );
-
-  return projectDirectory;
-}

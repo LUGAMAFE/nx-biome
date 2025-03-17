@@ -45,8 +45,18 @@
     }
   },
   "release": {
+    "projects": ["nx-biome"],
     "version": {
       "preVersionCommand": "npx nx run-many -t build"
+    },
+    "changelog": {
+      "workspaceChangelog": {
+        "createRelease": "github"
+      }
+    },
+    "git": {
+      "commit": true,
+      "tag": true
     }
   }
 }
