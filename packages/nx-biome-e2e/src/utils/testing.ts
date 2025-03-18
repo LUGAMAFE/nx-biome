@@ -47,7 +47,7 @@ export function createTestProject(
   const flags = getForceFlags(pkgManager);
   const command = `${
     getPackageManagerCommand(pkgManager).dlx
-  } ${flags} create-nx-workspace@${nxVersion} ${workspaceName} --preset npm --nxCloud=skip --no-interactive --pm ${pkgManager}`;
+  } ${flags} create-nx-workspace@${nxVersion} ${workspaceName} --preset npm --nxCloud=skip --no-interactive --pm ${pkgManager} --verbose`;
 
   console.log(
     `Creating a sandbox project in '${projectDirectory}' with command: '${command}'...`

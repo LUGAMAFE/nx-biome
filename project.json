@@ -2,7 +2,7 @@
   "name": "@nx-biome/source",
   "$schema": "node_modules/nx/schemas/project-schema.json",
   "targets": {
-    "verdaccio": {
+    "local-registry": {
       "executor": "@nx/js:verdaccio",
       "options": {
         "port": 4873,
