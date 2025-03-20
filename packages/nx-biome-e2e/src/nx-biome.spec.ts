@@ -23,8 +23,8 @@ import {
 
 // Determine if we should reuse the project from the environment variable
 // This allows switching from the command line or CI configuration
-/* const REUSE_PROJECT = process.env.NX_BIOME_REUSE_PROJECT === 'true'; */
-const REUSE_PROJECT = true;
+const REUSE_PROJECT = process.env.NX_BIOME_REUSE_PROJECT === 'true';
+/* const REUSE_PROJECT = true; */
 
 jest.setTimeout(120000);
 
