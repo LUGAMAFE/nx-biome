@@ -1,6 +1,10 @@
 {
   "name": "@lugamafe/nx-biome",
-  "version": "0.0.2-1",
+  "author": {
+    "name": "LUGAMAFE",
+    "email": "lugamafe@gmail.com"
+  },
+  "version": "0.0.2-2",
   "type": "commonjs",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
@@ -8,6 +12,8 @@
     "@nx/devkit": "20.6.0",
     "tslib": "^2.3.0"
   },
+  "license": "MIT",
+  "private": false,
   "generators": "./generators.json",
   "executors": "./executors.json",
   "repository": {
