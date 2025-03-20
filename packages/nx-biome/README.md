@@ -82,14 +82,14 @@ Here's an example of how an executor might be configured with default flags in y
     "your-project": {
       "targets": {
         "format": {
-          "executor": "@LUGAMAFE/nx-biome:format",
+          "executor": "@lugamafe/nx-biome:format",
           "options": {
             "write": true,
             "unsafe": true
           }
         },
         "lint": {
-          "executor": "@LUGAMAFE/nx-biome:lint",
+          "executor": "@lugamafe/nx-biome:lint",
           "options": {
             "write": true
           }

@@ -15,7 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@LUGAMAFE/nx-biome": ["packages/nx-biome/src/index.ts"]
+      "@lugamafe/nx-biome": ["packages/nx-biome/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -1,5 +1,5 @@
 {
-  "name": "@LUGAMAFE/nx-biome",
+  "name": "@lugamafe/nx-biome",
   "version": "0.0.2-0",
   "type": "commonjs",
   "main": "./src/index.js",
@@ -12,6 +12,6 @@
   "executors": "./executors.json",
   "repository": {
     "type": "git",
-    "url": "https://github.com/LUGAMAFE/nx-biome"
+    "url": "https://github.com/lugamafe/nx-biome"
   }
 }

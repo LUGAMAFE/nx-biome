@@ -19,5 +19,5 @@ export const PROJECT_NAMES = {
  */
 export const PLUGIN_INFO = {
   /** Name of the plugin package */
-  PACKAGE_NAME: '@LUGAMAFE/nx-biome',
+  PACKAGE_NAME: '@lugamafe/nx-biome',
 };
