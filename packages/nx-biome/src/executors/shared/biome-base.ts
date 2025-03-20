@@ -2,7 +2,7 @@ import { ExecutorContext, logger } from '@nx/devkit';
 import { execSync } from 'node:child_process';
 
 export interface BiomeBaseOptions {
-  filePatterns: string[];
+  filePatterns: string[] | string;
   write?: boolean;
   unsafe?: boolean;
 }
@@ -17,21 +17,25 @@ export abstract class BiomeExecutorBase<T extends BiomeBaseOptions> {
 
   protected buildCommand(): string {
     const { filePatterns, write, unsafe } = this.options;
-    const projectRoot = this.context.root;
 
     let cmd = `npx biome ${this.command}`;
 
-    if (filePatterns?.length) {
+    if (Array.isArray(filePatterns)) {
       cmd += ` ${filePatterns
-        .map((pattern) => `"${projectRoot}/${pattern}"`)
+        .map((pattern) => {
+          // Siempre tratamos las rutas como relativas al root del proyecto
+          return `"${pattern}"`;
+        })
         .join(' ')}`;
+    } else {
+      cmd += ` "${filePatterns}"`;
     }
-
-    if (write) {
+    // @ts-expect-error write puede ser un string o un boolean
+    if (write === 'true' || write === true) {
       cmd += ' --write';
     }
-
-    if (unsafe) {
+    // @ts-expect-error unsafe puede ser un string o un boolean
+    if (unsafe === 'true' || unsafe === true) {
       cmd += ' --unsafe';
     }
 

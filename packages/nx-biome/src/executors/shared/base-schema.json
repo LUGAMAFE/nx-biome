@@ -5,16 +5,25 @@
   "type": "object",
   "properties": {
     "filePatterns": {
-      "type": "array",
-      "items": { "type": "string" },
+      "oneOf": [
+        {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        {
+          "type": "string"
+        }
+      ],
       "description": "The file patterns to process"
     },
     "write": {
       "type": "boolean",
+      "default": false,
       "description": "Whether to write the changes to the files"
     },
     "unsafe": {
       "type": "boolean",
+      "default": false,
       "description": "Whether to allow unsafe operations"
     }
   },

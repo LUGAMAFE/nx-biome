@@ -6,35 +6,68 @@ import {
   readJsonFile,
   workspaceRoot,
 } from '@nx/devkit';
-import {
-  checkFilesExist,
-  fileExists,
-  readFile,
-  readJson,
-  runCommand,
-  runCommandAsync,
-  tmpProjPath,
-} from '@nx/plugin/testing';
-import { mkdirSync, rmSync } from 'fs';
-import { basename, dirname, resolve } from 'path';
+import { fileExists, runCommand, tmpProjPath } from '@nx/plugin/testing';
+import { existsSync, mkdirSync, rmSync } from 'fs';
+import { basename, dirname } from 'path';
+import { PROJECT_NAMES } from './constants';
 
-export { checkFilesExist, readFile, readJson, tmpProjPath };
+export { tmpProjPath };
 
+/**
+ * Detects if the operating system is Windows
+ */
 export const isWin = process.platform === 'win32';
 
 /**
  * Creates a test project with create-nx-workspace and installs the plugin
+ * If reuseExisting is true, it will try to reuse an existing project
+ * @param projectName The name of the project to create
+ * @param pkgManager The package manager to use
+ * @param workspaceVersion The version of Nx to use (latest or local)
+ * @param reuseExisting Whether to reuse an existing project if it exists
  * @returns The directory where the test project was created
  */
 export function createTestProject(
-  projectName = 'test-project',
+  projectName = PROJECT_NAMES.TEST_PROJECT,
   pkgManager: PackageManager = detectPackageManager(),
-  workspaceVersion: 'latest' | 'local' = 'latest'
+  workspaceVersion: 'latest' | 'local' = 'latest',
+  reuseExisting = false
 ) {
   const projectDirectory = tmpProjPath(projectName);
   const workspaceName = basename(projectDirectory);
   const workspaceParentDir = dirname(projectDirectory);
 
+  // Check if project already exists and should be reused
+  if (reuseExisting && existsSync(projectDirectory)) {
+    console.log(`Reusing existing project at ${projectDirectory}`);
+
+    const nodeModulesPath = joinPathFragments(projectDirectory, 'node_modules');
+    const packageJsonPath = joinPathFragments(projectDirectory, 'package.json');
+    const biomePath = joinPathFragments(
+      projectDirectory,
+      'node_modules',
+      '@biomejs',
+      'biome'
+    );
+
+    // Verify basic structure to make sure it's a valid project
+    if (
+      existsSync(nodeModulesPath) &&
+      existsSync(packageJsonPath) &&
+      existsSync(biomePath)
+    ) {
+      console.log(
+        'Project structure valid, skipping creation and dependency installation'
+      );
+      return projectDirectory;
+    }
+
+    console.log(
+      'Project exists but appears to be incomplete, recreating it...'
+    );
+  }
+
+  // Remove existing project if we're not reusing it or it's invalid
   rmSync(projectDirectory, {
     recursive: true,
     force: true,
@@ -43,7 +76,8 @@ export function createTestProject(
     recursive: true,
   });
 
-  const nxVersion = workspaceVersion === 'local' ? readLocalNxWorkspaceVersion() : 'latest';
+  const nxVersion =
+    workspaceVersion === 'local' ? readLocalNxWorkspaceVersion() : 'latest';
   const flags = getForceFlags(pkgManager);
   const command = `${
     getPackageManagerCommand(pkgManager).dlx
@@ -68,6 +102,10 @@ export function createTestProject(
   }
 }
 
+/**
+ * Reads the local Nx workspace version from package.json
+ * @returns The Nx version string
+ */
 export function readLocalNxWorkspaceVersion(): string {
   const pkgJsonPath = joinPathFragments(workspaceRoot, 'package.json');
   if (!fileExists(pkgJsonPath)) {
@@ -78,6 +116,11 @@ export function readLocalNxWorkspaceVersion(): string {
   return readJsonFile(pkgJsonPath).devDependencies['nx'];
 }
 
+/**
+ * Gets the appropriate flags for the package manager
+ * @param packageManager The package manager to get flags for
+ * @returns The flags as a string
+ */
 function getForceFlags(packageManager: PackageManager): string {
   switch (packageManager.toLowerCase()) {
     case 'npm':
@@ -95,27 +138,5 @@ function getForceFlags(packageManager: PackageManager): string {
       return '--force';
     default:
       throw new Error(`Unsupported package manager: ${packageManager}`);
-  }
-}
-
-/**
- * Run a nx command asynchronously inside the e2e directory
- * @param command
- * @param opts
- */
-export function runNxCommandAsync(
-  command: string,
-  opts: { silenceError?: boolean; env?: NodeJS.ProcessEnv; cwd?: string } = {
-    silenceError: false,
-  }
-) {
-  const cwd = opts.cwd ?? tmpProjPath();
-  if (fileExists(resolve(cwd, 'package.json'))) {
-    const pmc = getPackageManagerCommand(detectPackageManager(cwd));
-    return runCommandAsync(`${pmc.exec} nx ${command}`, opts);
-  } else if (isWin) {
-    return runCommandAsync(`./nx.bat %${command}`, opts);
-  } else {
-    return runCommandAsync(`./nx ${command}`, opts);
   }
 }
